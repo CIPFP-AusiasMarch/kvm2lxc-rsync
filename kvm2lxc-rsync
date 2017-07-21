@@ -33,7 +33,7 @@ ping -c 2 $DEST_HOST > /dev/null 2>&1 || die "$DEST_HOST unreachable"
 [  $(id -u) -eq 0 ] || die "You must be root my friend!"
 which rsync >/dev/null || die "Please, install rsync"
 
-EXC_DIRS="/run /boot /tmp /proc /sys /dev /etc/network"
+EXC_DIRS="/run /boot /tmp /proc /sys /dev /etc/network /lib/modules /lib/modules-load.d"
 EXC_FILES="/etc/fstab /etc/mtab /etc/hosts /etc/hostname /etc/resolv.conf"
 RSYNC_COMMAND="rsync -axv"
 for i in $EXC_DIRS; do
