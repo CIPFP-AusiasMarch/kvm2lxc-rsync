@@ -1,0 +1,69 @@
+#!/bin/sh
+die() {
+	echo "$1" >&2 
+	exit 1
+}
+
+usage() {
+	die "USAGE: $(basename "$0") SOURCE_PATH DEST_HOST:DEST_PATH\nUSAGE: $(basename "$0") SOURCE_PATH DEST_HOST DEST_PATH" >&2 
+}
+
+SOURCE_PATH="$1"
+[ -n "$SOURCE_PATH" ] || usage
+[ -d "$SOURCE_PATH" ] || die "$SOURCE_PATH is not a directory"
+[ -d "$SOURCE_PATH/etc" ] || die "SOURCE_PATH doesn't look like a root filesystem"
+SOURCE_PATH="$SOURCE_PATH/"
+
+shift
+DEST_HOST="$1"
+[ -n "$DEST_HOST" ] || usage
+if echo $DEST_HOST | grep -q ":"; then
+	DEST_PATH="${DEST_HOST#*:}"
+	DEST_HOST="${DEST_HOST%:*}"
+	[ -n "$DEST_HOST" ] || usage
+else
+	shift
+	DEST_PATH="$1"
+fi
+[ -n "$DEST_PATH" ] || usage
+echo "Trying to ping $DEST_HOST ..... Be patient!"
+
+ping -c 2 $DEST_HOST > /dev/null 2>&1 || die "$DEST_HOST unreachable"
+
+[  $(id -u) -eq 0 ] || die "You must be root my friend!"
+which rsync >/dev/null || die "Please, install rsync"
+
+EXC_DIRS="/run /boot /tmp /proc /sys /dev /etc/network"
+EXC_FILES="/etc/fstab /etc/mtab /etc/hosts /etc/hostname /etc/resolv.conf"
+RSYNC_COMMAND="rsync -axv"
+for i in $EXC_DIRS; do
+	RSYNC_COMMAND="$RSYNC_COMMAND --exclude='$i/*'"
+done
+
+for i in $EXC_FILES; do
+	RSYNC_COMMAND="$RSYNC_COMMAND --exclude='$i'"
+done
+RSYNC_COMMAND="$RSYNC_COMMAND $SOURCE_PATH root@$DEST_HOST:/$DEST_PATH"
+echo "\n COMMAND to run:\n"
+echo "$RSYNC_COMMAND"
+answer=""
+while true; do
+	echo "\nAre you ready to run the rsync command?:(Yes\No)\n"
+	read answer
+	if [ $answer = "Yes" ]; then
+		$RSYNC_COMMAND
+		break
+	elif [ $answer = "No" ] ; then
+		break	
+	fi
+done
+	
+
+
+
+
+
+
+
+
+
