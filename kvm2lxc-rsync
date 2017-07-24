@@ -34,7 +34,7 @@ ping -c 2 $DEST_HOST > /dev/null 2>&1 || die "$DEST_HOST unreachable"
 which rsync >/dev/null || die "Please, install rsync"
 
 EXC_DIRS="/run /boot /tmp /proc /sys /dev /etc/network /lib/modules /lib/modules-load.d /usr/src"
-EXC_FILES="/etc/fstab /etc/mtab /etc/hosts /etc/hostname /etc/resolv.conf"
+EXC_FILES="/etc/fstab /etc/mtab /etc/hosts /etc/hostname /etc/resolv.conf /initrd.img* /vmlinuz*"
 RSYNC_COMMAND="rsync -axv"
 for i in $EXC_DIRS; do
 	RSYNC_COMMAND="$RSYNC_COMMAND --exclude='$i/*'"
